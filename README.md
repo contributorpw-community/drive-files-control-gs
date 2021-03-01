@@ -1,2 +1,3 @@
-# drive-files-control-gs
-Простое приложение для поиска и изменения файлов на Диске Гугл
+# contributorpw-community/drive-files-control-gs
+
+https://drive.google.com/drive/folders/1m76LqkzcFA1D4DNaPnd-ROXbv_nomvdb?usp=sharing
