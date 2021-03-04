@@ -1,29 +1,36 @@
 'use strict';
 const gulp = require('gulp');
+const git = require('gulp-git');
 const spawn = require('child_process').spawn;
 const del = require('del');
 const packageJson = require('./package.json');
+
+const dependencies = ['./BatchRequest/BatchRequests.js'];
 
 const watchDelay =
   (packageJson.devSettings ? packageJson.devSettings.watchDelay : undefined) ||
   3000;
 
+gulp.task('updateSubmodules', function () {
+  return git.updateSubmodule({ args: '--init' });
+});
+
 /**
  * Cleans build
  */
-gulp.task('clean', function() {
+gulp.task('clean', function () {
   return del('build');
 });
 
 /**
  * Runs clasp
  */
-gulp.task('clasp', function(cb) {
+gulp.task('clasp', function (cb) {
   cb = cb || console.log;
   const cmd = spawn('./node_modules/.bin/clasp', ['push'], {
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
-  cmd.on('close', function(code) {
+  cmd.on('close', function (code) {
     console.log('clasp exited with code ' + code);
     cb(code);
   });
@@ -36,7 +43,7 @@ gulp.task('devPrep', function devPrep() {
 gulp.task('devassets', function devPrep() {
   return gulp
     .src('./settings/dev/assets/**/*.{ts,js,gs,json,html}', {
-      base: './settings/dev/assets'
+      base: './settings/dev/assets',
     })
     .pipe(gulp.dest('build/_assets'));
 });
@@ -44,7 +51,7 @@ gulp.task('devassets', function devPrep() {
 gulp.task('prodassets', function devPrep() {
   return gulp
     .src('./settings/prod/assets/**/*.{ts,js,gs,json,html}', {
-      base: './settings/prod/assets'
+      base: './settings/prod/assets',
     })
     .pipe(gulp.dest('build/_assets'));
 });
@@ -58,11 +65,32 @@ gulp.task('preBuild', function devPrep() {
 });
 
 /**
+ * Update dependencies
+ */
+gulp.task(
+  'update-dedependencies',
+  gulp.series('updateSubmodules', function updateDependencies() {
+    return gulp
+      .src(dependencies, {
+        base: './',
+      })
+      .pipe(gulp.dest('./build/_dependencies'));
+  })
+);
+
+/**
  * Dev
  */
 gulp.task(
   'dev',
-  gulp.series('clean', 'devPrep', 'preBuild', 'devassets', 'clasp')
+  gulp.series(
+    'clean',
+    'devPrep',
+    'preBuild',
+    'update-dedependencies',
+    'devassets',
+    'clasp'
+  )
 );
 
 /**
@@ -70,7 +98,14 @@ gulp.task(
  */
 gulp.task(
   'build',
-  gulp.series('clean', 'buildPrep', 'preBuild', 'prodassets', 'clasp')
+  gulp.series(
+    'clean',
+    'buildPrep',
+    'preBuild',
+    'update-dedependencies',
+    'prodassets',
+    'clasp'
+  )
 );
 
 /**
@@ -82,7 +117,7 @@ gulp.task(
     gulp.watch(
       [
         './src/**/*.{ts,js,gs,json,html}',
-        './settings/**/*.{ts,js,gs,json,html}'
+        './settings/**/*.{ts,js,gs,json,html}',
       ],
       { delay: watchDelay },
       gulp.series('dev')
@@ -99,7 +134,7 @@ gulp.task(
     gulp.watch(
       [
         './src/**/*.{ts,js,gs,json,html}',
-        './settings/**/*.{ts,js,gs,json,html}'
+        './settings/**/*.{ts,js,gs,json,html}',
       ],
       { delay: watchDelay },
       gulp.series('build')
