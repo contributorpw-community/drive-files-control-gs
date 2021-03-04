@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+  </head>
+  <body>
+    <div id="app">
+      <form>
+        <fieldset :disabled="exec">
+          <input v-model="email" placeholder="user@emai.post"/>
+          <input type="button" @click="click" value="click me" />
+        </fieldset>
+      </form>
+      <pre v-text="data"></pre>
+      <timer v-bind:start="start"></timer>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <?!=include_('ui/google.html')?>
+    <?!=include_('ui/logic.html')?>
+    <?!=include_('ui/standalone/app.html')?>
+  </body>
+</html>

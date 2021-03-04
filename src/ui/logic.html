@@ -1,0 +1,10 @@
+<script>
+  const repeater = async (fn, cb, ...rest) => {
+    const data = await run(fn, ...rest);
+    if (data) {
+      cb(data);
+      return repeater(fn, cb, ...rest);
+    }
+    return Promise.resolve(data);
+  };
+</script>

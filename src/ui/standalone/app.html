@@ -1,0 +1,77 @@
+<script>
+  const appOptionsObject = {
+    data() {
+      return {
+        email: '',
+        exec: false,
+        files_updated: 0,
+        start: 0,
+      };
+    },
+    methods: {
+      async click() {
+        this.exec = true;
+        this.start += 1;
+        await this.removeUser(this.email).catch((error) =>
+          console.error(error.message, error.stack, error)
+        );
+        this.start = 0;
+        this.exec = false;
+      },
+      async removeUser(email) {
+        await repeater(
+          'uiActionRemoveUser',
+          (data) => {
+            this.start += 1;
+            this.files_updated += data.length;
+          },
+          email
+        );
+      },
+    },
+    computed: {
+      data() {
+        return Object.assign({}, this.$data);
+      },
+    },
+  };
+
+  const app = Vue.createApp(appOptionsObject);
+
+  app.component('timer', {
+    props: ['start'],
+    template: `
+      <div>
+        <div>
+          {{start}} {{time}}ms
+        </div>
+        <ol>
+          <li v-for="item in timers" :key="item.start">{{ item.time / 1000 }}s</li>
+        </ol>
+      </div>
+    `,
+    watch: {
+      start: function (newVal, oldVal) {
+        if (newVal === 0) {
+          clearInterval(this.interval);
+          this.time = 0;
+          return;
+        }
+        const step = 100;
+        if (this.interval) {
+          this.timers.push({ start: this.start - 1, time: this.time });
+          clearInterval(this.interval);
+          this.time = 0;
+        }
+        this.interval = setInterval(() => {
+          this.time += step;
+        }, step);
+      },
+    },
+    data() {
+      return { time: 0, interval: undefined, timers: [] };
+    },
+  });
+
+  app.mount('#app');
+</script>
